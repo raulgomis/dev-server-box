@@ -1,0 +1,37 @@
+version: "2"
+services:
+  influxdb:
+    image: influxdb:latest
+    container_name: metrics-influxdb
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    environment:
+      - INFLUXDB_DATA_ENGINE=tsm1
+    networks:
+      - metricsnet
+
+  telegraf:
+    image: telegraf:latest
+    container_name: metrics-telegraf
+    links:
+      - influxdb
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    networks:
+      - metricsnet
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: metrics-grafana
+    ports:
+      - "3000:3000"
+    links:
+      - influxdb
+    networks:
+      - metricsnet
+
+networks:
+  metricsnet:
+    driver: bridge
